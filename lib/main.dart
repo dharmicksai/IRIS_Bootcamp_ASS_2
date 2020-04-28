@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'loader.dart';
 import 'strings.dart';
@@ -44,9 +46,9 @@ class _HomepageState extends State<Homepage> {
       body: Container( //sending Contanier for body
         decoration: BoxDecoration(    //decorations
           gradient: LinearGradient(   //seting Background colour using gradient of colors
-              colors: [Colors.lightGreenAccent,Colors.blue],  //set staring colour to green and end color to blue
-              begin: Alignment.topLeft, //starting point is top left corner of screen
-              end:Alignment.bottomRight//ending point is bottom right corner
+              colors: [Colors.black,Colors.white],  //set staring colour to green and end color to blue
+              begin: Alignment.topCenter, //starting point is top left corner of screen
+              end:Alignment.bottomCenter//ending point is bottom right corner
           )
         ),
         child: Center( //placing contents in center
@@ -55,7 +57,8 @@ class _HomepageState extends State<Homepage> {
               child: Column(  //initialising column
                 mainAxisAlignment: MainAxisAlignment.center,  //alignig children to center
                 children: <Widget>[
-                  Text('Hola ',style: TextStyle(  // text widget
+                  Text('To Do',style: TextStyle(// text widget
+                    fontFamily: 'Lobster',
                     fontSize: 40.0, //set font size
                     fontWeight: FontWeight.bold, //set font weight to bold
                   ),),
@@ -128,8 +131,15 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(  //setting app bar
-         title: Text('$day ${months[month]} $year'), //title: day Month_name year
+        appBar: AppBar(//setting app bar
+
+         title: Text('$day  ${months[month]}  $year',
+         style: TextStyle(
+           color: Colors.black87,
+           fontSize: 50.0,
+           fontFamily: "Bangers",
+         ),
+         ), //title: day Month_name year
           centerTitle: true, //title to be in center
         ),
         body: buildList(), //list view
@@ -200,127 +210,176 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         backgroundColor: Colors.lightGreenAccent,//setting back ground color to light green
 
+
       ),
     );
 
   }
 }
-List<String>data = [ //data off app
-  '26 Jan',
-  '10 Mar',
-  '25 Mar',
-  '1 May',
-  '7 May',
-  '25 May',
-  '1 Aug',
-  '3 Aug',
-  '12 Aug',
-];
-
-int curlindex=6;
 
 Widget buildList() {
-  return ValueListenableBuilder(
-      valueListenable: Hive.box('notes').listenable(),
-      builder: ( context , Box notes, _){
-        return ListView.builder( //list view
-          itemCount: notes.length, //length of list view
-          itemBuilder: (BuildContext context, int index) {// widget builder
-            final note = notes.getAt(index);
-            return Container(
-              padding: EdgeInsets.symmetric(vertical:10.0,horizontal:50.0),
-              child: ExpansionTile( //adding expansion on clicking
-                title: Text(note.title),
+  return
+    Stack(
+      children: <Widget>[
+        Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage("image/avengers.jpg"),
+                fit: BoxFit.cover,
 
-                children: <Widget>[
-                  Text(note.description.toString()),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      FlatButton(
-                          onPressed: (){
-                            showDialog(
-                                context: context,
-                                builder: (BuildContext context,){
-                                  String title;
-                                  String description;
+            )
+          ),
 
-                                  return Dialog(
-                                      child: Form(
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: <Widget>[
-                                              Padding(
-                                                padding: const EdgeInsets.all(16.0),
-                                                child: TextFormField(
-                                                  decoration: InputDecoration(
-                                                      labelText: 'todo',
+        ),
+        ValueListenableBuilder(
+
+          valueListenable: Hive.box('notes').listenable(),
+          builder: ( context , Box notes, _){
+
+            return ListView.builder( //list view
+              itemCount: notes.length, //length of list view
+              itemBuilder: (BuildContext context, int index) {// widget builder
+                final note = notes.getAt(index);
 
 
-                                                  ),
 
-                                                  onChanged:(input) {
-                                                    title = input;
-                                                    print(title);
-                                                  },
+                return Column(
+                  children: <Widget>[
+                    Opacity(
+                      opacity: 0.8,
+                      child: Container(
+                        margin: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          borderRadius:BorderRadius.all(Radius.circular(10.0)),
+                          border: Border.all(
+                            width: 1.0,
+                            color: Colors.black,
+                           ),
+                          color: Colors.orangeAccent
+                          ),
 
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.all(16.0),
-                                                child: TextFormField(
-                                                  decoration: InputDecoration(
-                                                      labelText: 'description'
-                                                  ),
-                                                  onChanged:(input) {
-                                                    description = input;
-                                                    print(description);
-                                                  },
 
-                                                ),
-                                              ),
-                                              RaisedButton(
-                                                onPressed: (){
+                        key: Key(note.title),
+                        padding: EdgeInsets.symmetric(vertical:10.0,horizontal:50.0),
+                        child: Column(
+                          children: <Widget>[
+                            ExpansionTile( //adding expansion on clicking
+                              title: Text(note.title,
+                                style: TextStyle(
+                                  fontFamily: 'Bangers',
+                                  fontSize: 30.0
 
-                                                  final newnote= Note(title,description);
-                                                  print(newnote.title);
-                                                  final db = Hive.box('notes');
-                                                  db.putAt(index,
-                                                      newnote);
-                                                  print('added');
-                                                  Navigator.pop(context);
+                                ),
+                              ),
 
-                                                },
-                                                child: Text('Update TODO'),
-                                              )
-                                            ],
-                                          )
-                                      )
-                                  );
-                                }
-                            );
 
-                          },
-                          child: Icon(Icons.update)
+                              children: <Widget>[
+                                Text("description : "+note.description.toString(),
+                                  style: TextStyle(
+                                    fontFamily: 'Satisfy',
+                                    fontSize: 20.0,
+                                    fontWeight:FontWeight.w700,
+
+                                  ),
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    IconButton(
+                                        onPressed: (){
+                                          showDialog(
+                                              context: context,
+                                              builder: (BuildContext context,){
+                                                String title;
+                                                String description;
+
+                                                return Dialog(
+                                                    child: Form(
+                                                        child: Column(
+                                                          mainAxisSize: MainAxisSize.min,
+                                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                                          children: <Widget>[
+                                                            Padding(
+                                                              padding: const EdgeInsets.all(16.0),
+                                                              child: TextFormField(
+                                                                decoration: InputDecoration(
+                                                                  labelText: 'todo',
+
+
+                                                                ),
+
+                                                                onChanged:(input) {
+                                                                  title = input;
+                                                                  print(title);
+                                                                },
+
+                                                              ),
+                                                            ),
+                                                            Padding(
+                                                              padding: const EdgeInsets.all(16.0),
+                                                              child: TextFormField(
+                                                                decoration: InputDecoration(
+                                                                    labelText: 'description'
+                                                                ),
+                                                                onChanged:(input) {
+                                                                  description = input;
+                                                                  print(description);
+                                                                },
+
+                                                              ),
+                                                            ),
+                                                            RaisedButton(
+                                                              onPressed: (){
+
+                                                                final newnote= Note(title,description);
+                                                                print(newnote.title);
+                                                                final db = Hive.box('notes');
+                                                                db.putAt(index,
+                                                                    newnote);
+                                                                print('added');
+                                                                Navigator.pop(context);
+
+                                                              },
+                                                              child: Text('Update TODO'),
+                                                            )
+                                                          ],
+                                                        )
+                                                    )
+                                                );
+                                              }
+                                          );
+
+                                        },
+                                        icon: Icon(Icons.refresh)
+                                    ),
+                                    IconButton(
+                                      onPressed: (){
+                                        notes.deleteAt(index);
+                                      },
+                                      icon: Icon(Icons.delete),
+                                    )
+                                  ],
+                                ),
+
+                              ],
+
+                            ),
+
+                          ],
+                        ),
                       ),
-                      FlatButton(
-                        onPressed: (){
-                          notes.deleteAt(index);
-                        },
-                        child: Icon(Icons.delete),
-                      )
-                    ],
-                  ),
-
-                ],
-
-              ),
+                    ),
+                    SizedBox(
+                      height: 30.0,
+                    )
+                  ],
+                );
+              },
             );
-          },
-        );
-      }
-  );
+          }
+  ),
+      ],
+    );
 }
 
 

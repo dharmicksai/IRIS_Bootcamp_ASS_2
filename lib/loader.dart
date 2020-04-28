@@ -22,7 +22,7 @@ class _loaderState extends State<loader> with SingleTickerProviderStateMixin{ //
     Timer(Duration(seconds: 7), (){  //setting time of animation to 5 seconds
       Navigator.pop(context); //after end of animations movig to actual home page
       Navigator.pushNamed(context, '/home');} );
-    controller=AnimationController(vsync: this,duration: Duration(seconds: 5)); //initialising controller
+    controller=AnimationController(vsync: this,duration: Duration(seconds: 3)); //initialising controller
 
     animation_rotation = Tween<double>(
       begin: 0.0, // start of value of rotation
