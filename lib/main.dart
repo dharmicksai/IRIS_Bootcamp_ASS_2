@@ -14,9 +14,9 @@ import 'note.dart';
 void main() async{
 
   WidgetsFlutterBinding.ensureInitialized();
-  final directory = await getApplicationDocumentsDirectory();
-  Hive.init(directory.path);
-  Hive.registerAdapter(NoteAdapter());
+  final directory = await getApplicationDocumentsDirectory(); //finding directory path
+  Hive.init(directory.path); //initialisising hive
+  Hive.registerAdapter(NoteAdapter()); //registering adapter for note
   runApp(MyApp()); //runs My App
 }
 class MyApp extends StatelessWidget {
@@ -43,35 +43,35 @@ class _HomepageState extends State<Homepage> {
   Widget build(BuildContext context) {
     return Scaffold(
 
-      body: Container( //sending Contanier for body
-        decoration: BoxDecoration(    //decorations
-          gradient: LinearGradient(   //seting Background colour using gradient of colors
-              colors: [Colors.black,Colors.white],  //set staring colour to green and end color to blue
-              begin: Alignment.topCenter, //starting point is top left corner of screen
-              end:Alignment.bottomCenter//ending point is bottom right corner
+      body: Container(                                  //sending Contanier for body
+        decoration: BoxDecoration(                      //decorations
+          gradient: LinearGradient(                      //seting Background colour using gradient of colors
+              colors: [Colors.black,Colors.white],        //set staring colour to green and end color to blue
+              begin: Alignment.topCenter,                 //starting point is top left corner of screen
+              end:Alignment.bottomCenter                  //ending point is bottom right corner
           )
         ),
         child: Center( //placing contents in center
 
-            child: SafeArea( //making sure widgets dont go to places where they might get over laped
-              child: Column(  //initialising column
+            child: SafeArea(                                   //making sure widgets dont go to places where they might get over laped
+              child: Column(                                  //initialising column
                 mainAxisAlignment: MainAxisAlignment.center,  //alignig children to center
                 children: <Widget>[
-                  Text('To Do',style: TextStyle(// text widget
-                    fontFamily: 'Lobster',
-                    fontSize: 40.0, //set font size
-                    fontWeight: FontWeight.bold, //set font weight to bold
+                  Text('To Do',style: TextStyle(  // text widget
+                    fontFamily: 'Lobster',         //specifing font family
+                    fontSize: 40.0,               //set font size
+                    fontWeight: FontWeight.bold,  //set font weight to bold
                   ),),
                   SizedBox(
-                    height: 30.0, //sized Box to give space between loader and text
+                    height: 30.0,                //sized Box to give space between loader and text
                   ),
-                  loader(), //loader is imported from lib/loader.dart see here for more details
+                  loader(),                      //loader is imported from lib/loader.dart see here for more details
                   SizedBox(
-                    height: 30.0, //empty box to give space between loader and sized box
+                    height: 30.0,                //empty box to give space between loader and sized box
                   ),
                   Text('Please Wait Loading',style: TextStyle(
-                    fontSize: 15.0, //setting font size
-                    fontWeight: FontWeight.w300, //setting font weight
+                    fontSize: 15.0,               //setting font size
+                    fontWeight: FontWeight.w300,  //setting font weight
                   ),),
                 ],
               ),
@@ -90,24 +90,24 @@ class _StartPageState extends State<StartPage> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: Hive.openBox('notes'),
+        future: Hive.openBox('notes'),                             //opening hive box
         builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if(snapshot.connectionState == ConnectionState.done){
-            if(snapshot.hasError)
+          if(snapshot.connectionState == ConnectionState.done){    //checks if box is open
+            if(snapshot.hasError)                                  //checks if it has error
               {
-                return Text(snapshot.error.toString());
+                return Text(snapshot.error.toString());            //shows error
               }else{
-              print('opend box');
-              return HomeScreen();
+
+              return HomeScreen();                                 //returns home screen
             }
           }else{
-            return Scaffold();
+            return Scaffold();                                      //return scaffold till box is opened
           }
         }
     );
   }
   @override
-  void dispose(){
+  void dispose(){                 //while closing app Box is closed
     Hive.close();
     super.dispose();
   }
@@ -124,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int day = DateTime.now().day; //provides day number
   int month = DateTime.now().month; //provides month number
   int year = DateTime.now().year; //provides year number
-  TextEditingController txtcontroller = TextEditingController();
+  TextEditingController txtcontroller = TextEditingController(); //text controller
 
 
   @override
@@ -136,8 +136,8 @@ class _HomeScreenState extends State<HomeScreen> {
          title: Text('$day  ${months[month]}  $year',
          style: TextStyle(
            color: Colors.black87,
-           fontSize: 50.0,
-           fontFamily: "Bangers",
+           fontSize: 50.0,    //font size
+           fontFamily: "Bangers",  //font family
          ),
          ), //title: day Month_name year
           centerTitle: true, //title to be in center
@@ -145,29 +145,29 @@ class _HomeScreenState extends State<HomeScreen> {
         body: buildList(), //list view
         floatingActionButton: FloatingActionButton(  //floating acttion button
           child: Icon(Icons.add),  //icon add is given to button
-          onPressed: (){
+          onPressed: (){       //action onpressed
             showDialog(
                 context: context,
-               builder: (BuildContext context,){
+               builder: (BuildContext context,){   //Dialog builder
                   String title;
                   String description;
 
                   return Dialog(
                     child: Form(
                         child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,  //keeping size minimum
+                          crossAxisAlignment: CrossAxisAlignment.center,     //placing widgets in center
                           children: <Widget>[
                             Padding(
                               padding: const EdgeInsets.all(16.0),
-                              child: TextFormField(
+                              child: TextFormField(                //input text feild
                                 decoration: InputDecoration(
                                   labelText: 'todo'
                                 ),
 
-                                onChanged:(input) {
+                                onChanged:(input) {    //when adding input input is saved in titlle
                                       title = input;
-                                      print(title);
+
                                   },
 
                               ),
@@ -179,21 +179,39 @@ class _HomeScreenState extends State<HomeScreen> {
                                     labelText: 'description'
                                 ),
                                 onChanged:(input) {
-                                  description = input;
-                                  print(description);
+                                  description = input;   //input for description
+
                                 },
 
                               ),
                             ),
                             RaisedButton(
                                 onPressed: (){
-                                  
-                                  final newnote= Note(title,description);
-                                  print(newnote.title);
-                                  final db = Hive.box('notes');
-                                  db.add(newnote);
-                                  print('added');
-                                  Navigator.pop(context);
+                                  if ((title != null) && (description != null)&&(title!=' ')&&(description!=' ')&&(title!=' ')&&(description!=' ')) {  //checking for title and description not to be null
+                                    final newnote = Note(title, description); // creating note
+
+                                    final db = Hive.box('notes');
+                                    db.add(newnote);                                    //adding note
+
+                                    Navigator.pop(context);                           //removingDialog
+                                  }else{
+                                    showDialog(
+                                        context: context,                             //showing alert dialog
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            title: Text('Alert'),
+                                            content: Text('Invalid Title or Description'),
+                                            actions: <Widget>[
+                                              FlatButton(
+                                                child: Text('OK'),
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                },
+                                              )
+                                            ],
+                                          );
+                                        });
+                                  }
 
                                 },
                               child: Text('Create TODO'),
@@ -219,21 +237,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
 Widget buildList() {
   return
-    Stack(
-      children: <Widget>[
+    Stack(                            //using stack for animations
+      children: <Widget>[                  //here background image is behind list view
         Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-                image: AssetImage("image/avengers.jpg"),
-                fit: BoxFit.cover,
+                image: AssetImage("image/avengers.jpg"),      //providing background image
+                fit: BoxFit.cover,                           //covering entire screen
 
             )
           ),
 
         ),
-        ValueListenableBuilder(
+        ValueListenableBuilder(                              //listeneable builder which rebuilds when Box is changed
 
-          valueListenable: Hive.box('notes').listenable(),
+          valueListenable: Hive.box('notes').listenable(),       //listening to notes
           builder: ( context , Box notes, _){
 
             return ListView.builder( //list view
@@ -246,11 +264,11 @@ Widget buildList() {
                 return Column(
                   children: <Widget>[
                     Opacity(
-                      opacity: 0.8,
+                      opacity: 0.8,              //setting opacity for visibility of background
                       child: Container(
                         margin: EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          borderRadius:BorderRadius.all(Radius.circular(10.0)),
+                          borderRadius:BorderRadius.all(Radius.circular(10.0)),    //providing circular edges
                           border: Border.all(
                             width: 1.0,
                             color: Colors.black,
@@ -259,21 +277,21 @@ Widget buildList() {
                           ),
 
 
-                        key: Key(note.title),
+                        key: Key(note.title), //providing key
                         padding: EdgeInsets.symmetric(vertical:10.0,horizontal:50.0),
                         child: Column(
                           children: <Widget>[
-                            ExpansionTile( //adding expansion on clicking
+                            ExpansionTile(                  //adding expansion on clicking
                               title: Text(note.title,
                                 style: TextStyle(
-                                  fontFamily: 'Bangers',
+                                  fontFamily: 'Bangers',  //font family for style
                                   fontSize: 30.0
 
                                 ),
                               ),
 
 
-                              children: <Widget>[
+                              children: <Widget>[       //widgets opened on clicking
                                 Text("description : "+note.description.toString(),
                                   style: TextStyle(
                                     fontFamily: 'Satisfy',
@@ -285,11 +303,11 @@ Widget buildList() {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: <Widget>[
-                                    IconButton(
+                                    IconButton(         //button for update
                                         onPressed: (){
                                           showDialog(
                                               context: context,
-                                              builder: (BuildContext context,){
+                                              builder: (BuildContext context,){  //dialog builder
                                                 String title;
                                                 String description;
 
@@ -301,16 +319,16 @@ Widget buildList() {
                                                           children: <Widget>[
                                                             Padding(
                                                               padding: const EdgeInsets.all(16.0),
-                                                              child: TextFormField(
+                                                              child: TextFormField(        //input for title
                                                                 decoration: InputDecoration(
                                                                   labelText: 'todo',
 
 
                                                                 ),
 
-                                                                onChanged:(input) {
+                                                                onChanged:(input) {        //saving title
                                                                   title = input;
-                                                                  print(title);
+
                                                                 },
 
                                                               ),
@@ -318,26 +336,52 @@ Widget buildList() {
                                                             Padding(
                                                               padding: const EdgeInsets.all(16.0),
                                                               child: TextFormField(
-                                                                decoration: InputDecoration(
+                                                                decoration: InputDecoration(   //input for description
                                                                     labelText: 'description'
                                                                 ),
-                                                                onChanged:(input) {
+                                                                onChanged:(input) {        //saving description
                                                                   description = input;
-                                                                  print(description);
+
                                                                 },
 
                                                               ),
                                                             ),
                                                             RaisedButton(
                                                               onPressed: (){
-
-                                                                final newnote= Note(title,description);
-                                                                print(newnote.title);
-                                                                final db = Hive.box('notes');
-                                                                db.putAt(index,
-                                                                    newnote);
-                                                                print('added');
-                                                                Navigator.pop(context);
+                                                                if(title!=null &&description!=null) { //checking for validation
+                                                                  final newnote = Note(
+                                                                      title,                //creating note
+                                                                      description);
+                                                                  print(newnote
+                                                                      .title);
+                                                                  final db = Hive
+                                                                      .box(
+                                                                      'notes');
+                                                                  db.putAt(
+                                                                      index,          //updating box
+                                                                      newnote);
+                                                                  print(
+                                                                      'added');
+                                                                  Navigator.pop(        //going back
+                                                                      context);
+                                                                }else{      //alert dialog
+                                                                  showDialog(
+                                                                      context: context,
+                                                                      builder: (BuildContext context) {
+                                                                        return AlertDialog(
+                                                                          title: Text('Alert'),
+                                                                          content: Text('Invalid Title or Description'),
+                                                                          actions: <Widget>[
+                                                                            FlatButton(
+                                                                              child: Text('OK'),
+                                                                              onPressed: () {
+                                                                                Navigator.pop(context);
+                                                                              },
+                                                                            )
+                                                                          ],
+                                                                        );
+                                                                      });
+                                                                }
 
                                                               },
                                                               child: Text('Update TODO'),
@@ -350,11 +394,11 @@ Widget buildList() {
                                           );
 
                                         },
-                                        icon: Icon(Icons.refresh)
+                                        icon: Icon(Icons.refresh)  //refresh icon
                                     ),
                                     IconButton(
                                       onPressed: (){
-                                        notes.deleteAt(index);
+                                        notes.deleteAt(index);  //deleting Box
                                       },
                                       icon: Icon(Icons.delete),
                                     )
