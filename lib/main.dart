@@ -3,8 +3,20 @@ import 'loader.dart';
 import 'strings.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
-void main() => runApp(MyApp()); //runs My App
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:hive/hive.dart';
+import 'note.dart';
 
+
+void main() async{
+
+  WidgetsFlutterBinding.ensureInitialized();
+  final directory = await getApplicationDocumentsDirectory();
+  Hive.init(directory.path);
+  Hive.registerAdapter(NoteAdapter());
+  runApp(MyApp()); //runs My App
+}
 class MyApp extends StatelessWidget {
 
   @override
@@ -12,7 +24,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       home: Homepage() ,//sets home page to splash screen
       routes: {  //giving Navigator routes
-       "/home": (BuildContext context) => HomeScreen(),
+       "/home": (BuildContext context) => StartPage(),
     },
 
     );
@@ -66,6 +78,39 @@ class _HomepageState extends State<Homepage> {
   }
 }
 
+class StartPage extends StatefulWidget {
+  @override
+  _StartPageState createState() => _StartPageState();
+}
+
+class _StartPageState extends State<StartPage> {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+        future: Hive.openBox('notes'),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if(snapshot.connectionState == ConnectionState.done){
+            if(snapshot.hasError)
+              {
+                return Text(snapshot.error.toString());
+              }else{
+              print('opend box');
+              return HomeScreen();
+            }
+          }else{
+            return Scaffold();
+          }
+        }
+    );
+  }
+  @override
+  void dispose(){
+    Hive.close();
+    super.dispose();
+  }
+}
+
+
 class HomeScreen extends StatefulWidget { //actual home page
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -76,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int day = DateTime.now().day; //provides day number
   int month = DateTime.now().month; //provides month number
   int year = DateTime.now().year; //provides year number
-
+  TextEditingController txtcontroller = TextEditingController();
 
 
   @override
@@ -90,86 +135,71 @@ class _HomeScreenState extends State<HomeScreen> {
         body: buildList(), //list view
         floatingActionButton: FloatingActionButton(  //floating acttion button
           child: Icon(Icons.add),  //icon add is given to button
-          onPressed: (){ //providing on press action
-            if(curlindex<strings.length)  // checking if all elemnts are added to screen
-              {
-                showDialog(  //adding dialog
+          onPressed: (){
+            showDialog(
+                context: context,
+               builder: (BuildContext context,){
+                  String title;
+                  String description;
 
-                    context: context, //context of diaalog
-                    builder:(BuildContext context){  //builder of dialog box
-                      return Dialog( //dialog to ask wether to add data
-
-
-                        backgroundColor: Colors.blue, //background color
-                        child: Column( //column for widgets
-                          mainAxisSize: MainAxisSize.min, //size of column should be as minimum as possible
+                  return Dialog(
+                    child: Form(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
-                            Text('Hi,',style: TextStyle( // text widget
-                              fontSize: 20.0 //font size
-                            ),),
-                            Text('Do u want to add event:',style:TextStyle(
-                              fontSize: 20.0 //font size
-                            ),),
-                            Text(' ${events[strings[curlindex]]}',style: TextStyle(
-                              fontSize: 20 //font size
-                            ),),
-                            Row( //row of buttons
-                              mainAxisAlignment: MainAxisAlignment.center, //placeing buttons in center
-                              children: <Widget>[
-                                FlatButton(//add button
-                                    color: Colors.lightGreenAccent,//button color
-                                    onPressed: (){ //on pressed action
-                                      data.add(strings[curlindex]); //adding data from strings
-                                      curlindex++; //incrimenting length of data
-                                      setState(() {}); //implemnting changes
-                                      Navigator.pop(context); //removing dialog
-
-                                    },
-                                    child: Text('yes',style: TextStyle(
-                                      fontSize: 20.0//font size
-                                    ),)
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: TextFormField(
+                                decoration: InputDecoration(
+                                  labelText: 'todo'
                                 ),
-                                FlatButton(//dont add button
-                                  onPressed: (){
-                                    Navigator.pop(context);//remove dialog
+
+                                onChanged:(input) {
+                                      title = input;
+                                      print(title);
                                   },
-                                  child:Text('No') ,
-                                  color: Colors.red,
+
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: TextFormField(
+                                decoration: InputDecoration(
+                                    labelText: 'description'
                                 ),
-                              ],
+                                onChanged:(input) {
+                                  description = input;
+                                  print(description);
+                                },
+
+                              ),
+                            ),
+                            RaisedButton(
+                                onPressed: (){
+                                  
+                                  final newnote= Note(title,description);
+                                  print(newnote.title);
+                                  final db = Hive.box('notes');
+                                  db.add(newnote);
+                                  print('added');
+                                  Navigator.pop(context);
+
+                                },
+                              child: Text('Create TODO'),
                             )
-
-
                           ],
-                        ),
-
-                      );
-                    }
-                );
-                setState(() {});
-              } else { //dialog to show end of file
-              showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text('Alert'),
-                      content: Text('End of list!'),
-                      actions: <Widget>[
-                        FlatButton(//button to remove allert dialog
-                          child: Text('OK'),
-                          onPressed: () {
-                            Navigator.pop(context);//removing dialog
-                          },
                         )
-                      ],
-                    );
-                  });
-            }
+                    )
+                  );
+               }
+            );
 
-          },
+          }
 
         ),
         backgroundColor: Colors.lightGreenAccent,//setting back ground color to light green
+
       ),
     );
 
@@ -190,34 +220,106 @@ List<String>data = [ //data off app
 int curlindex=6;
 
 Widget buildList() {
-  return ListView.builder( //list view
-    itemCount: data.length, //length of list view
-    itemBuilder: (BuildContext context, int index) { // widget builder
-      return Container(
-        padding: EdgeInsets.symmetric(vertical:10.0,horizontal:50.0),
-        child: ExpansionTile( //adding expansion on clicking
-          title: Text(data[index]+" : "+ events[data[index]]),
-          children: <Widget>[ //children r shown when pressed on widget
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical:10.0,horizontal: 80.0),
-                child:FlatButton(//button to launch url
-                    onPressed:() async{
-                      if (await canLaunch(url[data[index]])) { //check if it can launch url
-                        await launch(url[data[index]]); //launch url
-                      } else { //else throw exception
-                        print('could not launch');
-                        throw 'Could not launch url';
-                      }
+  return ValueListenableBuilder(
+      valueListenable: Hive.box('notes').listenable(),
+      builder: ( context , Box notes, _){
+        return ListView.builder( //list view
+          itemCount: notes.length, //length of list view
+          itemBuilder: (BuildContext context, int index) {// widget builder
+            final note = notes.getAt(index);
+            return Container(
+              padding: EdgeInsets.symmetric(vertical:10.0,horizontal:50.0),
+              child: ExpansionTile( //adding expansion on clicking
+                title: Text(note.title),
 
-                    },
-                    child: Icon(Icons.launch)),//icon for launching
+                children: <Widget>[
+                  Text(note.description.toString()),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      FlatButton(
+                          onPressed: (){
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context,){
+                                  String title;
+                                  String description;
+
+                                  return Dialog(
+                                      child: Form(
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            children: <Widget>[
+                                              Padding(
+                                                padding: const EdgeInsets.all(16.0),
+                                                child: TextFormField(
+                                                  decoration: InputDecoration(
+                                                      labelText: 'todo',
+
+
+                                                  ),
+
+                                                  onChanged:(input) {
+                                                    title = input;
+                                                    print(title);
+                                                  },
+
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.all(16.0),
+                                                child: TextFormField(
+                                                  decoration: InputDecoration(
+                                                      labelText: 'description'
+                                                  ),
+                                                  onChanged:(input) {
+                                                    description = input;
+                                                    print(description);
+                                                  },
+
+                                                ),
+                                              ),
+                                              RaisedButton(
+                                                onPressed: (){
+
+                                                  final newnote= Note(title,description);
+                                                  print(newnote.title);
+                                                  final db = Hive.box('notes');
+                                                  db.putAt(index,
+                                                      newnote);
+                                                  print('added');
+                                                  Navigator.pop(context);
+
+                                                },
+                                                child: Text('Update TODO'),
+                                              )
+                                            ],
+                                          )
+                                      )
+                                  );
+                                }
+                            );
+
+                          },
+                          child: Icon(Icons.update)
+                      ),
+                      FlatButton(
+                        onPressed: (){
+                          notes.deleteAt(index);
+                        },
+                        child: Icon(Icons.delete),
+                      )
+                    ],
+                  ),
+
+                ],
+
               ),
-            ),
-          ],
-        ),
-      );
-    },
+            );
+          },
+        );
+      }
   );
 }
 
